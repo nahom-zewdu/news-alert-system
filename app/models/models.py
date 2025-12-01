@@ -3,7 +3,7 @@
 
 from sqlmodel import SQLModel, Field
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 
 class Article(SQLModel, table=True):
     """Model representing a news article."""
@@ -16,4 +16,4 @@ class Article(SQLModel, table=True):
     matched_keywords: Optional[str] = None  # JSON string
     topic: Optional[str] = None
     notified: bool = False
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=datetime.now(timezone.utc))
