@@ -23,3 +23,11 @@ dependencies = [
     "uvicorn>=0.38.0",
     "watchfiles>=1.1.1",
 ]
+
+[dependency-groups]
+dev = [
+    "black>=25.11.0",
+    "mypy>=1.19.0",
+    "pytest>=9.0.1",
+    "ruff>=0.14.7",
+]
