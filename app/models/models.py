@@ -6,6 +6,7 @@ from typing import Optional
 from datetime import datetime
 
 class Article(SQLModel, table=True):
+    """Model representing a news article."""
     id: Optional[int] = Field(default=None, primary_key=True)
     title: str = Field(index=True)
     link: str = Field(index=True, unique=True)
