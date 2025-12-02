@@ -3,11 +3,13 @@
 
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from app.core.config import settings
+from app.core.config import Settings
 from app.workers import ingest
 from rq import Queue
 from redis import Redis
 import asyncio
+
+settings = Settings()
 
 redis_conn = Redis.from_url(settings.REDIS_URL)
 queue = Queue(connection=redis_conn)
