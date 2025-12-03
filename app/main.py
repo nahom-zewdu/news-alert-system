@@ -22,6 +22,7 @@ async def lifespan(app: FastAPI):
     yield
 
 create_db_and_tables()
+
 app = FastAPI(title=settings.APP_NAME, lifespan=lifespan)
 
 @app.get("/")
