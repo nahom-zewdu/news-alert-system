@@ -4,7 +4,9 @@
 import feedparser
 import httpx
 from datetime import datetime
-from app.core.config import settings
+from app.core.config import Settings
+
+settings = Settings()
 
 async def fetch_rss_feeds() -> list[dict]:
     articles = []
