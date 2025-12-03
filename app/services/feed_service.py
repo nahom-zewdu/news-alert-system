@@ -10,7 +10,7 @@ settings = Settings()
 
 async def fetch_rss_feeds() -> list[dict]:
     articles = []
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(follow_redirects=True) as client:
         for url in settings.RSS_FEEDS:
             try:
                 r = await client.get(url, timeout=10.0)
