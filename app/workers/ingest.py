@@ -3,13 +3,15 @@
 
 from app.services.feed_service import fetch_rss_feeds
 from app.services.classifier import classify_article
-from app.models import Article
+from app.models.models import Article
 from sqlmodel import Session, create_engine, select
-from app.core.config import settings
+from app.core.config import Settings
 from datetime import datetime, timezone
 import json
 
-engine = create_engine("postgresql+psycopg2://postgres:postgres@localhost:5432/newsalert")
+settings = Settings()
+
+engine = create_engine("postgresql+psycopg2://postgres:postgres@postgres:5432/newsalert")
 
 def run_ingestion():
     """Ingestion job to fetch, classify, and store news articles."""
