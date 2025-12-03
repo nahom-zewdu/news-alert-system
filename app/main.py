@@ -2,6 +2,7 @@
 """Main application entry point for the News Alert System."""
 
 from fastapi import FastAPI
+from app.database import create_db_and_tables
 from contextlib import asynccontextmanager
 from app.core.config import Settings
 from app.workers import ingest
@@ -20,6 +21,7 @@ async def lifespan(app: FastAPI):
     queue.enqueue(ingest.run_ingestion)
     yield
 
+create_db_and_tables()
 app = FastAPI(title=settings.APP_NAME, lifespan=lifespan)
 
 @app.get("/")
