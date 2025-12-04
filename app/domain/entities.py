@@ -28,7 +28,7 @@ class NewsItem(BaseModel):
     title: str
     link: Optional[HttpUrl] = None
     summary: Optional[str] = None
-    published: Optional[datetime] = None
+    published_at: Optional[datetime] = None
     source: Optional[str] = None
     categories: List[str] = []
 
