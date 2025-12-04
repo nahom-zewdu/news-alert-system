@@ -46,7 +46,7 @@ async def lifespan(app: FastAPI):
 
     # Initialize database connection
     init_db()
-    
+
     # --- Create periodic task ---
     def periodic_task():
         try:
@@ -65,7 +65,6 @@ async def lifespan(app: FastAPI):
 
     # Start scheduler
     scheduler.start()
-
 
     # Yield control back to FastAPI
     yield
