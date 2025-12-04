@@ -1,9 +1,8 @@
 # app/services/news_fetcher.py
 """
-News fetcher service.
-
-Orchestrates fetching feeds, classifying items, and storing them in a demo in-memory store.
-Replace storage with a persistent DB for production use.
+Service functions for fetching, classifying, and storing news items.
+Uses RSS feeds and a classification service.
+Provides functions to fetch news, classify them, and store new items in the database.
 """
 
 from typing import List, Dict
@@ -13,33 +12,45 @@ from app.infrastructure.rss_client import fetch_all_configured
 from app.services.classifier import ClassifierService
 from app.domain.entities import NewsItem
 from app.core.config import settings
+from app.models.news_item_doc import NewsItemDocument
 
 logger = logging.getLogger(__name__)
 
-# In-memory store for demo purposes (id -> NewsItem)
-_news_store: Dict[str, NewsItem] = {}
-
-
-def list_news() -> List[NewsItem]:
-    """
-    Return all news items currently in the store.
-    """
-    return list(_news_store.values())
-
-
-def store_items(items: List[NewsItem]) -> List[NewsItem]:
-    """
-    Store items into the in-memory store; idempotent by id.
-    Returns the list of newly added items.
-    """
+def store_items(items: List[NewsItem]):
     added = []
     for it in items:
-        if it.id not in _news_store:
-            _news_store[it.id] = it
+        doc = NewsItemDocument.objects(id=it.id).first()
+        if not doc:
+            link = str(it.link) if it.link else None
+
+            doc = NewsItemDocument(
+                id=it.id,
+                title=it.title,
+                summary=it.summary,
+                link=link,
+                source=it.source,
+                categories=it.categories,
+                published_at=it.published_at,
+            )
+            doc.save()
             added.append(it)
     logger.info("store_items: added=%d", len(added))
     return added
 
+
+def list_news() -> List[NewsItem]:
+    items = []
+    for doc in NewsItemDocument.objects.order_by("-published_at"):
+        items.append(NewsItem(
+            id=doc.id,
+            title=doc.title,
+            summary=doc.summary,
+            link=doc.link,
+            source=doc.source,
+            categories=doc.categories,
+            published_at=doc.published_at
+        ))
+    return items
 
 def fetch_and_process(classifier: ClassifierService) -> List[NewsItem]:
     """
