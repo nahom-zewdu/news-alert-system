@@ -24,6 +24,7 @@ from app.infrastructure.groq_client import GroqClient
 from app.services.classifier import ClassifierService
 from app.services.news_fetcher import fetch_and_process
 from app.api.router import get_root_router
+from app.core.db import init_db
 
 configure_logging()
 logger = logging.getLogger(__name__)
@@ -43,6 +44,9 @@ async def lifespan(app: FastAPI):
     groq_client = GroqClient(settings.GROQ_API_KEY) if settings.GROQ_API_KEY else None
     classifier = ClassifierService(groq=groq_client)
 
+    # Initialize database connection
+    init_db()
+    
     # --- Create periodic task ---
     def periodic_task():
         try:
@@ -61,6 +65,7 @@ async def lifespan(app: FastAPI):
 
     # Start scheduler
     scheduler.start()
+
 
     # Yield control back to FastAPI
     yield
