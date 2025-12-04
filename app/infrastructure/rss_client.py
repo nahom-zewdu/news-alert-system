@@ -29,7 +29,7 @@ def fetch_from_feed_url(url: str) -> List[NewsItem]:
         nid = entry.get("id") or entry.get("guid") or entry.get("link") or str(uuid.uuid4())
         published = None
         if entry.get("published_parsed"):
-            published = datetime(*entry.published_parsed[:6])
+            published_at = datetime(*entry.published_parsed[:6])
         categories = []
         if entry.get("tags"):
             for tag in entry.get("tags"):
@@ -41,7 +41,7 @@ def fetch_from_feed_url(url: str) -> List[NewsItem]:
             title=entry.get("title", "")[:500],
             link=entry.get("link"),
             summary=entry.get("summary"),
-            published=published,
+            published_at=published_at,
             source=parsed.feed.get("title"),
             categories=categories,
         )
