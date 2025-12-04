@@ -25,17 +25,25 @@ class Settings(BaseSettings):
     SMTP_HOST: str
     SMTP_PORT: int = 587
     SMTP_USER: str
-    SMTP_PASS: str
+    SMTP_PASS: str = Field(..., env="SMTP_PASS")
     ALERT_EMAIL_FROM: str
     ALERT_EMAIL_TO: str
 
     # LLM / Groq
     GROQ_API_KEY: Optional[str] = ""
+    GROQ_MODEL: str = Field("llama-3.1-8b-instant", env="GROQ_MODEL")
 
-    # Scheduler mode: background | nuvom | none
+    # News filtering
+    KEYWORDS: Optional[str] = "[]"
+    TOPICS: Optional[str] = "[]"
+
+    # Redis (future)
+    REDIS_URL: Optional[str] = None
+
+    # Scheduler mode
     SCHEDULER_MODE: str = Field("background")
 
-    # RSS feeds (comma-separated)
+    # RSS feeds
     RSS_FEEDS: Optional[str] = ""
 
     # Logging
@@ -44,6 +52,8 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = True
+        extra = "allow"
+
 
     @property
     def rss_feed_list(self) -> List[str]:
