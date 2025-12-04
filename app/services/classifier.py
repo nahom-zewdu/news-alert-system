@@ -32,7 +32,7 @@ class ClassifierService(ClassifierInterface):
     def __init__(self, groq: Optional[GroqClient] = None):
         self.groq = groq
 
-    def classify(self, title: str, summary: str = "") -> List[str]:
+    def classify(self, title: str, summary: str = "", model: str = "llama-3.1-8b-instant") -> List[str]:
         """
         Return list of categories for the provided title/summary.
         """
@@ -40,7 +40,7 @@ class ClassifierService(ClassifierInterface):
         # Try LLM first
         if self.groq:
             try:
-                labels = self.groq.classify_text(text)
+                labels = self.groq.classify_text(text, model)
                 if labels:
                     logger.info("Classified via Groq: %s", labels)
                     return labels
