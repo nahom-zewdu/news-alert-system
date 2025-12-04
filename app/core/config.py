@@ -40,6 +40,9 @@ class Settings(BaseSettings):
     # Redis (future)
     REDIS_URL: Optional[str] = None
 
+    # MongoDB
+    MONGO_URI: str = Field("mongodb://localhost:27017/news_db", env="MONGO_URI")
+    
     # Scheduler mode
     SCHEDULER_MODE: str = Field("background")
 
