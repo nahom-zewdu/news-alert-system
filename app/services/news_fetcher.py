@@ -51,7 +51,7 @@ def fetch_and_process(classifier: ClassifierService) -> List[NewsItem]:
     logger.info("Fetched %d items", len(fetched))
     # classify
     for it in fetched:
-        it.categories = classifier.classify(it.title, it.summary or "")
+        it.categories = classifier.classify(it.title, it.summary or "", model=settings.GROQ_MODEL)
     new = store_items(fetched)
     logger.info("fetch_and_process: new=%d", len(new))
     return new
