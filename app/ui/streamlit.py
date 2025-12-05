@@ -16,7 +16,7 @@ from app.core.config import settings as _settings
 API_BASE = f"http://{_settings.APP_HOST}:{_settings.APP_PORT}/api"
 
 st.set_page_config(page_title="News Alert Demo", layout="wide")
-st.title("News Alert System — Demo Dashboard")
+st.title("News Alert System Demo Dashboard")
 
 # Sidebar controls
 st.sidebar.header("Config")
