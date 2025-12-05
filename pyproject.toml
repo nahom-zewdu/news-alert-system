@@ -21,6 +21,7 @@ dependencies = [
   "schedule>=1.2.0",
   "groq>=0.37.0",
   "mongoengine>=0.29.1",
+  "streamlit-autorefresh>=1.0.1",
 ]
 
 [build-system]
