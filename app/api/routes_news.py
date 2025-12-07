@@ -26,7 +26,7 @@ def get_classifier() -> ClassifierService:
     groq = None
     if settings.GROQ_API_KEY:
         groq = GroqClient(settings.GROQ_API_KEY)
-    return ClassifierService(groq=groq)
+    return ClassifierService(classifier=groq)
 
 
 @router.get("/news", tags=["news"])
