@@ -42,7 +42,7 @@ async def lifespan(app: FastAPI):
 
     # Initialize classifier
     groq_client = GroqClient(settings.GROQ_API_KEY) if settings.GROQ_API_KEY else None
-    classifier = ClassifierService(groq=groq_client)
+    classifier = ClassifierService(classifier=groq_client)
 
     # Initialize database connection
     init_db()
