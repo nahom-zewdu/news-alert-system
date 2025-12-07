@@ -6,5 +6,5 @@ from app.core.config import settings
 
 
 def init_db():
-    MONGO_URI = os.getenv(settings.MONGO_URI, "mongodb://localhost:27017/news_db")
+    MONGO_URI = settings.MONGO_URI
     connect(host=MONGO_URI)
