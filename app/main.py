@@ -29,8 +29,6 @@ from app.core.db import init_db
 configure_logging()
 logger = logging.getLogger(__name__)
 
-FETCH_INTERVAL_SECONDS = 30
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -60,7 +58,7 @@ async def lifespan(app: FastAPI):
     scheduler = create_scheduler(
         task=periodic_task,
         mode=settings.SCHEDULER_MODE,
-        interval_seconds=FETCH_INTERVAL_SECONDS,
+        interval_seconds=settings.FETCH_INTERVAL_SECONDS,
     )
 
     # Start scheduler
