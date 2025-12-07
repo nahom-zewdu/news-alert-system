@@ -30,7 +30,7 @@ class NewsItem(BaseModel):
     summary: Optional[str] = None
     published_at: Optional[datetime] = None
     source: Optional[str] = None
-    categories: List[str] = []
+    category: str = "uncategorized"
 
 
 class Alert(BaseModel):
