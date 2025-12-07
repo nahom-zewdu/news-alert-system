@@ -27,7 +27,7 @@ def fetch_from_feed_url(url: str) -> List[NewsItem]:
     items: List[NewsItem] = []
     for entry in parsed.entries:
         nid = entry.get("id") or entry.get("guid") or entry.get("link") or str(uuid.uuid4())
-        published = None
+        published_at = None
         if entry.get("published_parsed"):
             published_at = datetime(*entry.published_parsed[:6])
         categories = []
@@ -36,6 +36,7 @@ def fetch_from_feed_url(url: str) -> List[NewsItem]:
                 term = tag.get("term")
                 if term:
                     categories.append(term)
+        category = categories[0] if categories else "uncategorized"
         item = NewsItem(
             id=str(nid),
             title=entry.get("title", "")[:500],
@@ -43,7 +44,7 @@ def fetch_from_feed_url(url: str) -> List[NewsItem]:
             summary=entry.get("summary"),
             published_at=published_at,
             source=parsed.feed.get("title"),
-            categories=categories,
+            category=category,
         )
         items.append(item)
     return items
