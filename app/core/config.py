@@ -52,6 +52,9 @@ class Settings(BaseSettings):
     # Logging
     LOG_LEVEL: str = Field("INFO")
 
+    # Fetch interval
+    FETCH_INTERVAL_SECONDS: int = Field(30)
+
     class Config:
         env_file = ".env"
         case_sensitive = True
