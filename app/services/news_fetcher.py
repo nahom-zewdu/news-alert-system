@@ -29,7 +29,7 @@ def store_items(items: List[NewsItem]):
                 summary=it.summary,
                 link=link,
                 source=it.source,
-                categories=it.categories,
+                category=it.category,
                 published_at=it.published_at,
             )
             doc.save()
@@ -47,7 +47,7 @@ def list_news() -> List[NewsItem]:
             summary=doc.summary,
             link=doc.link,
             source=doc.source,
-            categories=doc.categories,
+            category=doc.category,
             published_at=doc.published_at
         ))
     return items
@@ -62,7 +62,7 @@ def fetch_and_process(classifier: ClassifierService) -> List[NewsItem]:
     logger.info("Fetched %d items", len(fetched))
     # classify
     for it in fetched:
-        it.categories = classifier.classify(it.title, it.summary or "", model=settings.GROQ_MODEL)
+        it.category = classifier.classify(title=it.title, settings=settings, summary=it.summary or "",)
     new = store_items(fetched)
     logger.info("fetch_and_process: new=%d", len(new))
     return new
