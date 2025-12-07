@@ -1,6 +1,6 @@
 # app/api/router.py
 """
-API router aggregator (versioned).
+API router aggregator.
 
 This module exposes a single APIRouter for API v1.  All route modules should
 be mounted under /api/v1 to permit non-breaking future changes.
