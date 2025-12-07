@@ -8,6 +8,7 @@ Keep concrete implementations behind these interfaces to preserve inversion of c
 from typing import List
 from abc import ABC, abstractmethod
 from app.domain.entities import NewsItem
+from app.core.config import Settings
 
 
 class NewsFetcherInterface(ABC):
@@ -29,7 +30,7 @@ class ClassifierInterface(ABC):
     """
 
     @abstractmethod
-    def classify(self, title: str, summary: str = "") -> str:
+    def classify(self, title: str, settings: Settings, summary: str = "") -> str:
         """
         Classify text and return a list of category labels.
         """
