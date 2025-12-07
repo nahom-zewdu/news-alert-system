@@ -62,4 +62,4 @@ def fetch_all_configured() -> List[NewsItem]:
             result.extend(fetch_from_feed_url(f))
         except Exception as exc:
             logger.exception("Failed to fetch feed %s: %s", f, exc)
-    return result
+    return result if len(result) < 3 else result[:3]  # limit for demo purposes
