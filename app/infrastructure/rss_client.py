@@ -50,16 +50,17 @@ def fetch_from_feed_url(url: str) -> List[NewsItem]:
     return items
 
 
-def fetch_all_configured() -> List[NewsItem]:
-    """
-    Fetch all feeds defined in settings and return aggregated NewsItem list.
-    """
+def fetch_all_configured(limit_per_feed: int = 5) -> List[NewsItem]:
+    """Fetch all feeds defined in settings, aggregate items, with a per-feed limit."""
     feeds = settings.rss_feed_list
     logger.info("Configured RSS feeds: %s", feeds)
-    result = []
-    for f in feeds:
+    all_items: List[NewsItem] = []
+
+    for feed_url in feeds:
         try:
-            result.extend(fetch_from_feed_url(f))
-        except Exception as exc:
-            logger.exception("Failed to fetch feed %s: %s", f, exc)
-    return result if len(result) < 3 else result[:3]  # limit for demo purposes
+            items = fetch_from_feed_url(feed_url)
+            all_items.extend(items[:limit_per_feed])
+        except Exception:
+            logger.exception("Failed to fetch feed %s", feed_url)
+
+    return all_items
