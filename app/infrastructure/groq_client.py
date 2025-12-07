@@ -51,7 +51,7 @@ class GroqClient:
                         "role": "system",
                         "content": (
                             "You are a classification engine. "
-                            f"Classify the following text into relevant category from this list: {settings.KEYWORDS}. "
+                            f"Classify the following text into relevant category from this list: {settings.TOPICS}. "
                             "Respond only with one category, or 'uncategorized' if none apply."
                         ),
                     },
