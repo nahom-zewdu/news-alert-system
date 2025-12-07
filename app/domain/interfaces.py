@@ -29,7 +29,7 @@ class ClassifierInterface(ABC):
     """
 
     @abstractmethod
-    def classify(self, title: str, summary: str = "") -> List[str]:
+    def classify(self, title: str, summary: str = "") -> str:
         """
         Classify text and return a list of category labels.
         """
