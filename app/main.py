@@ -40,14 +40,14 @@ async def lifespan(app: FastAPI):
     """
     logger.info("Starting application lifespan")
 
-    # --- Initialize classifier (Groq if configured) ---
+    # Initialize classifier
     groq_client = GroqClient(settings.GROQ_API_KEY) if settings.GROQ_API_KEY else None
     classifier = ClassifierService(groq=groq_client)
 
     # Initialize database connection
     init_db()
 
-    # --- Create periodic task ---
+    # Create periodic task
     def periodic_task():
         try:
             new_items = fetch_and_process(classifier)
@@ -56,7 +56,7 @@ async def lifespan(app: FastAPI):
         except Exception:
             logger.exception("Periodic task failed")
 
-    # --- Create scheduler ---
+    # Create scheduler
     scheduler = create_scheduler(
         task=periodic_task,
         mode=settings.SCHEDULER_MODE,
