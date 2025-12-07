@@ -12,5 +12,5 @@ class NewsItemDocument(Document):
     summary = StringField()
     link = StringField(required=True)
     source = StringField()
-    categories = ListField(StringField())
+    category = StringField()
     published_at = DateTimeField(default=datetime.now(timezone.utc))
