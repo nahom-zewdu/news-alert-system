@@ -13,6 +13,7 @@ Responsibilities:
 from typing import List, Optional
 import logging
 import math
+import uuid
 
 from app.infrastructure.rss_client import fetch_all_configured
 from app.services.classifier import ClassifierService
@@ -31,11 +32,11 @@ def store_items(items: List[NewsItem]) -> List[NewsItem]:
     for it in items:
         # ensure link is a plain string (mongodb validation)
         link = str(it.link) if it.link else None
-
-        doc = NewsItemDocument.objects(id=it.id).first()
+        id= str(uuid.uuid4())
+        doc = NewsItemDocument.objects(id=id).first()
         if not doc:
             doc = NewsItemDocument(
-                id=it.id,
+                id=id,
                 title=it.title,
                 summary=it.summary,
                 link=link,
@@ -55,7 +56,7 @@ def list_news() -> List[NewsItem]:
     NOTE: not paginated (kept for backward compatibility). Prefer list_news_paginated.
     """
     items: List[NewsItem] = []
-    for doc in NewsItemDocument.objects.order_by("-published_at"):
+    for doc in NewsItemDocument.objects.order_by("published_at"):
         items.append(
             NewsItem(
                 id=doc.id,
@@ -120,7 +121,7 @@ def fetch_and_process(classifier: ClassifierService) -> List[NewsItem]:
     # classify
     for it in fetched:
         # classifier.classify may be blocking; this function stays sync
-        it.category = classifier.classify(it.title, it.summary or "")
+        it.category = classifier.classify(title=it.title, summary=it.summary or "", settings=settings)
     new = store_items(fetched)
     logger.info("fetch_and_process: new=%d", len(new))
     return new
