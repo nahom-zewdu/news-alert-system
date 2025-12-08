@@ -24,7 +24,7 @@ class ClassifierService(ClassifierInterface):
     def __init__(self, classifier: Optional[GroqClient] = None):
         self.classifier = classifier
 
-    def classify(self, title: str, settings: Settings, summary: str = "") -> str:
+    def classify(self, title: str, summary: str = "", settings: Settings=Settings()) -> str:
         """
         Return list of categories for the provided title/summary.
         """
