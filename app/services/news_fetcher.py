@@ -14,6 +14,7 @@ from typing import List, Optional
 import logging
 import math
 import uuid
+import mongoengine.errors
 
 from app.infrastructure.rss_client import fetch_all_configured
 from app.services.classifier import ClassifierService
@@ -44,7 +45,11 @@ def store_items(items: List[NewsItem]) -> List[NewsItem]:
                 category=getattr(it, "category", None),
                 published_at=it.published_at,
             )
-            doc.save()
+            try:
+                doc.save()
+            except mongoengine.errors.NotUniqueError:
+                # already exists skip it
+                continue
             added.append(it)
     logger.info("store_items: added=%d", len(added))
     return added
@@ -124,4 +129,4 @@ def fetch_and_process(classifier: ClassifierService) -> List[NewsItem]:
         it.category = classifier.classify(title=it.title, summary=it.summary or "", settings=settings)
     new = store_items(fetched)
     logger.info("fetch_and_process: new=%d", len(new))
-    return new
+    return new or []
