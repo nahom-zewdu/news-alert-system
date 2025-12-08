@@ -10,7 +10,7 @@ class NewsItemDocument(Document):
     id = StringField(required=True, primary_key=True)
     title = StringField(required=True)
     summary = StringField()
-    link = StringField(required=True)
+    link = StringField(unique=True, required=True)
     source = StringField()
     category = StringField()
     published_at = DateTimeField(default=datetime.now(timezone.utc))
