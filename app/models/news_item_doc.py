@@ -5,7 +5,7 @@ from mongoengine import Document, StringField, ListField, DateTimeField
 from datetime import datetime, timezone
 
 class NewsItemDocument(Document):
-    meta = {"collection": "news_items"}
+    meta = {"collection": "news"}
     
     id = StringField(required=True, primary_key=True)
     title = StringField(required=True)
