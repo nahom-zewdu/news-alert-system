@@ -48,7 +48,9 @@ async def lifespan(app: FastAPI):
         interval_seconds=settings.FETCH_INTERVAL_SECONDS,
     )
 
-    scheduler.start()
+    if settings.SCHEDULER_MODE != "disabled":
+        logger.info("Starting scheduler in mode: %s", settings.SCHEDULER_MODE)
+        scheduler.start()
 
     # Hand back to FastAPI
     yield
