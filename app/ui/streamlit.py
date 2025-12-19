@@ -9,12 +9,13 @@ Streamlit demo UI for News Alert System
 
 import streamlit as st
 import requests
+import os
 import pandas as pd
 from datetime import datetime
 from streamlit_autorefresh import st_autorefresh
-from app.core.config import settings as _settings
 
-API_BASE = f"http://{_settings.APP_HOST}:{_settings.APP_PORT}/api/v1"
+
+API_BASE = f"http://{os.getenv('APP_HOST', 'localhost')}:{os.getenv('APP_PORT', '8000')}/api/v1"
 
 st.set_page_config(page_title="News Alert Demo", layout="wide")
 st.title("News Alert System Demo Dashboard")
