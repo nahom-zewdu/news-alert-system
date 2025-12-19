@@ -41,7 +41,10 @@ class Settings(BaseSettings):
     REDIS_URL: Optional[str] = None
 
     # MongoDB
-    MONGO_URI: str = Field("mongodb://localhost:27017/news_db", env="MONGO_URI")
+    MONGO_DB_ATLAS_USERNAME: str
+    MONGO_DB_ATLAS_PASSWORD: str
+    MONGO_DB_ATLAS_HOST: str
+    MONGO_DB_NAME: str = "news_db"
     
     # Scheduler mode
     SCHEDULER_MODE: str = Field("background")

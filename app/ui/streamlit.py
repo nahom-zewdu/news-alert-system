@@ -24,7 +24,7 @@ st.title("News Alert System Demo Dashboard")
 st.sidebar.header("Config")
 refresh_interval = st.sidebar.slider("Auto-refresh (seconds)", 5, 60, 15)
 st.sidebar.write(f"API: {API_BASE}")
-st.sidebar.write(f"Scheduler: {_settings.SCHEDULER_MODE}")
+st.sidebar.write(f"Scheduler: {os.getenv('SCHEDULER_MODE', 'background')}")
 query = st.sidebar.text_input("Search", placeholder="Search title or summary...")
 
 # Auto-refresh
