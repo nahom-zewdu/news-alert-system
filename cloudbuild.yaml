@@ -1,0 +1,26 @@
+steps:
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        gcloud run deploy news-backend \
+          --source . \
+          --region us-central1 \
+          --platform managed \
+          --allow-unauthenticated \
+          --entrypoint uvicorn \
+          --args "app.main:app,--host,0.0.0.0,--port,8080"
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        gcloud run deploy news-ui \
+          --source . \
+          --region us-central1 \
+          --platform managed \
+          --allow-unauthenticated \
+          --entrypoint streamlit \
+          --args "run,app/ui/streamlit.py,--server.port=8080,--server.address=0.0.0.0"
