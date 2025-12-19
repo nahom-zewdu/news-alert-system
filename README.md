@@ -45,6 +45,7 @@ app/
 ├─ services/            # fetching, classification, alerting logic
 ├─ models/              # pydantic + mongoengine models
 ├─ ui/                  # Streamlit dashboard
+├─ main.py                # fastapi main entry
 └─ entrypoints.py       # CLI script entrypoints
 ```
 
