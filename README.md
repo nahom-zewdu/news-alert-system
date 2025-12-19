@@ -134,6 +134,7 @@ Almost everything is configurable via environment variables:
 | `GROQ_API_KEY`   | API key for classification    |
 | `MONGO_URI`      | MongoDB connection            |
 | `FETCH_INTERVAL` | Scheduler interval in seconds |
+| `SCHEDULER_MODE` | Background, Nuvom, Disabled   |
 
 ---
 
