@@ -36,12 +36,14 @@ class BackgroundThreadScheduler(SchedulerInterface):
     def _loop(self):
         logger.info("BackgroundThreadScheduler started (interval=%s s)", self.interval_seconds)
 
-        while not self._stop_event.wait(self.interval_seconds): 
+        while not self._stop_event.is_set():
             try:
                 self.task()
             except Exception:
                 logger.exception("BackgroundThreadScheduler task failed")
 
+            if self._stop_event.wait(self.interval_seconds):
+                break
         logger.info("BackgroundThreadScheduler stopped")
 
     def start(self) -> None:
