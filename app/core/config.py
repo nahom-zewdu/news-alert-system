@@ -45,6 +45,7 @@ class Settings(BaseSettings):
     MONGO_DB_ATLAS_PASSWORD: str
     MONGO_DB_ATLAS_HOST: str
     MONGO_DB_NAME: str = "news_db"
+    MONGO_URI: str = Field(..., env="MONGO_URI")
     
     # Scheduler mode
     SCHEDULER_MODE: str = Field("background")
