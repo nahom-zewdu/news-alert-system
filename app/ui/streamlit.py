@@ -1,6 +1,11 @@
+# app/ui/streamlit.py
+
 """
-Streamlit demo UI for News Alert System
-Clean, professional dashboard with separate tabs for feed and subscription.
+Streamlit UI for News Alert System
+Professional dashboard with:
+- News Feed
+- Public subscription
+- Admin subscriber management
 """
 import streamlit as st
 import requests
@@ -15,14 +20,14 @@ API_BASE = f"http://{os.getenv('APP_HOST', 'localhost')}:{os.getenv('APP_PORT', 
 st.set_page_config(page_title="News Alert Dashboard", layout="wide")
 st.title("News Alert Dashboard")
 
-# Auto-refresh (only affects the News Feed tab)
-st_autorefresh(interval=30_000, key="datarefresh")  # 30 seconds
+# Auto-refresh only the feed tab
+st_autorefresh(interval=30_000, key="feed_refresh")  # 30 seconds
 
-# Available categories for subscription
+# Fixed allowed topics
 AVAILABLE_TOPICS = ["technology", "business", "science", "politics", "health"]
 
 # Tabs
-tab_feed, tab_subscribe = st.tabs(["News Feed", "Newsletter Subscription"])
+tab_feed, tab_subscribe, tab_manage = st.tabs(["News Feed", "Subscribe", "Manage Subscribers"])
 
 # ==================== TAB 1: News Feed ====================
 with tab_feed:
@@ -31,9 +36,8 @@ with tab_feed:
     with col_main:
         st.subheader("Latest Articles")
 
-        # Manual fetch button
         if st.button("Fetch Latest News"):
-            with st.spinner("Fetching and classifying new articles..."):
+            with st.spinner("Fetching new articles..."):
                 try:
                     r = requests.post(f"{API_BASE}/news/fetch/")
                     r.raise_for_status()
@@ -41,9 +45,9 @@ with tab_feed:
                     if count > 0:
                         st.success(f"Added {count} new articles")
                     else:
-                        st.info("No new articles at this time")
+                        st.info("No new articles found")
                 except Exception as e:
-                    st.error(f"Error: {e}")
+                    st.error("Fetch failed")
 
         # Load news
         try:
@@ -51,7 +55,7 @@ with tab_feed:
             resp.raise_for_status()
             news = resp.json()
         except Exception as e:
-            st.error(f"Failed to load articles: {e}")
+            st.error("Failed to load articles")
             news = []
 
         if not news:
@@ -61,15 +65,12 @@ with tab_feed:
         df = pd.DataFrame(news)
         df["published_at"] = pd.to_datetime(df["published_at"], utc=True)
 
-        # Sidebar filters in feed tab
+        # Filters in sidebar
         with st.sidebar:
             st.header("Filters")
-
-            search_query = st.text_input("Search in title or summary")
-
+            search_query = st.text_input("Search title or summary")
             sources = sorted(df["source"].dropna().unique())
             categories = sorted(df["category"].dropna().unique())
-
             selected_sources = st.multiselect("Source", options=sources)
             selected_categories = st.multiselect("Category", options=categories)
 
@@ -87,32 +88,25 @@ with tab_feed:
 
         # Apply filters
         filtered = df.copy()
-
         if search_query:
             q = search_query.lower()
-            mask = (
-                filtered["title"].str.lower().str.contains(q, na=False) |
-                filtered["summary"].str.lower().str.contains(q, na=False)
-            )
+            mask = (filtered["title"].str.lower().str.contains(q, na=False) |
+                    filtered["summary"].str.lower().str.contains(q, na=False))
             filtered = filtered[mask]
-
         if selected_sources:
             filtered = filtered[filtered["source"].isin(selected_sources)]
-
         if selected_categories:
             filtered = filtered[filtered["category"].isin(selected_categories)]
-
         filtered = filtered[
             (filtered["published_at"].dt.date >= start_date) &
             (filtered["published_at"].dt.date <= end_date)
         ]
 
-        # Session state for highlighting new items
+        # Highlight new items
         if "last_seen_ids" not in st.session_state:
             st.session_state.last_seen_ids = set()
         if "highlight_until" not in st.session_state:
             st.session_state.highlight_until = {}
-
         now = datetime.now(timezone.utc)
         current_ids = set(filtered["id"])
         new_ids = current_ids - st.session_state.last_seen_ids
@@ -125,125 +119,155 @@ with tab_feed:
             item = row.to_dict()
             is_new = now.timestamp() < st.session_state.highlight_until.get(item["id"], 0)
 
-            if is_new:
-                st.markdown(
-                    """
-                    <div style="
-                        border-left: 4px solid #4CAF50;
-                        background-color: #f8fff8;
-                        padding: 16px;
-                        border-radius: 8px;
-                        margin-bottom: 16px;
-                        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-                    ">
-                    """,
-                    unsafe_allow_html=True,
-                )
-            else:
-                st.markdown(
-                    """
-                    <div style="
-                        padding: 16px;
-                        border-radius: 8px;
-                        margin-bottom: 16px;
-                        background-color: white;
-                        border: 1px solid #eee;
-                        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-                    ">
-                    """,
-                    unsafe_allow_html=True,
-                )
+            card_style = """
+                <div style="
+                    border-left: 4px solid #4CAF50;
+                    background-color: #f8fff8;
+                    padding: 16px;
+                    border-radius: 8px;
+                    margin-bottom: 16px;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                ">
+            """ if is_new else """
+                <div style="
+                    padding: 16px;
+                    border-radius: 8px;
+                    margin-bottom: 16px;
+                    background-color: white;
+                    border: 1px solid #eee;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+                ">
+            """
+            st.markdown(card_style, unsafe_allow_html=True)
 
             st.markdown(f"**{item['title']}**")
-
-            meta = f"**Source:** {item.get('source', 'Unknown')} &nbsp; | &nbsp; "
-            meta += f"**Category:** {item.get('category', 'uncategorized')} &nbsp; | &nbsp; "
+            meta = f"**Source:** {item.get('source', 'Unknown')} | "
+            meta += f"**Category:** {item.get('category', 'uncategorized')} | "
             meta += f"**Published:** {item['published_at'].strftime('%b %d, %Y at %H:%M UTC')}"
             st.caption(meta)
 
             if item.get("summary"):
                 st.write(item["summary"])
-
             if item.get("link"):
                 st.markdown(f"[Read full article]({item['link']})")
 
             if st.button("Send Alert", key=f"alert_{item['id']}"):
-                with st.spinner("Sending alert..."):
+                with st.spinner("Sending..."):
                     try:
                         r = requests.post(f"{API_BASE}/alerts/{item['id']}")
                         r.raise_for_status()
-                        st.success("Alert sent to subscribers")
-                    except Exception as e:
+                        data = r.json()
+                        sent_count = data.get("sent_count", 0)
+                        msg = data.get("message", "")
+                        if sent_count > 0:
+                            st.success(f"Alert sent to {sent_count} subscriber(s)")
+                        else:
+                            st.info(msg or "No subscribers for this category")
+                    except Exception:
                         st.error("Failed to send alert")
 
             st.markdown("</div>", unsafe_allow_html=True)
 
-    # Alert History in side column
+    # Alert History
     with col_side:
-        st.subheader("Alert History")
+        st.subheader("Recent Alerts")
         try:
-            r = requests.get(f"{API_BASE}/alerts/")
+            r = requests.get(f"{API_BASE}/alerts/?limit=10")
             r.raise_for_status()
             alerts = r.json().get("alerts", [])
         except Exception:
-            st.error("Failed to load history")
+            st.error("Failed to load alerts")
             alerts = []
 
         if alerts:
-            for alert in reversed(alerts[:10]):  # Show latest 10
+            for alert in reversed(alerts):
                 status = "Sent" if alert.get("sent") else "Failed"
-                time = alert.get("sent_at", "Unknown")
-                if time != "Unknown":
-                    time = pd.to_datetime(time).strftime("%b %d, %Y %H:%M")
-
-                st.markdown(
-                    f"""
-                    **To:** {alert.get('to', 'N/A')}  
-                    **Subject:** {alert.get('subject', 'N/A')}  
-                    **Status:** {status}  
-                    **Time:** {time}
-                    """
-                )
+                time = pd.to_datetime(alert.get("sent_at")).strftime("%b %d, %Y %H:%M") if alert.get("sent_at") else "N/A"
+                st.markdown(f"**To:** {alert.get('to')}\n\n**Status:** {status} at {time}")
                 st.markdown("---")
         else:
             st.info("No alerts sent yet.")
 
-# ==================== TAB 2: Newsletter Subscription ====================
+# ==================== TAB 2: Subscribe ====================
 with tab_subscribe:
     st.header("Subscribe to News Alerts")
-    st.write("Receive curated news alerts based on your preferred topics.")
+    st.write("Get the latest news delivered to your inbox based on your interests.")
 
     with st.form("subscription_form", clear_on_submit=True):
         email = st.text_input("Email address", placeholder="you@example.com")
         topics = st.multiselect(
-            "Select topics you're interested in",
+            "Select topics of interest",
             options=AVAILABLE_TOPICS,
-            help="You will receive alerts only for selected topics"
+            help="You'll receive alerts only for selected topics"
         )
-
         submitted = st.form_submit_button("Subscribe")
+
         if submitted:
             if not email:
-                st.error("Please enter a valid email address.")
+                st.error("Email is required")
             elif not topics:
-                st.warning("Please select at least one topic.")
+                st.warning("Please select at least one topic")
             else:
                 with st.spinner("Subscribing..."):
                     try:
-                        payload = {"email": email, "topics": topics}
-                        r = requests.post(f"{API_BASE}/subscribers/", json=payload)
+                        r = requests.post(f"{API_BASE}/subscribers/", json={"email": email, "topics": topics})
                         if r.status_code == 201:
-                            st.success("Thank you! You've been successfully subscribed.")
+                            st.success("Thank you! You're now subscribed.")
                         elif r.status_code == 409:
-                            st.info("You're already subscribed.")
-                        else:
-                            r.raise_for_status()
-                    except requests.exceptions.HTTPError as e:
-                        if e.response.status_code == 409:
                             st.info("This email is already subscribed.")
                         else:
-                            st.error("Subscription failed. Please try again later.")
+                            r.raise_for_status()
+                    except requests.HTTPError as e:
+                        if e.response.status_code == 409:
+                            st.info("Already subscribed")
+                        else:
+                            st.error("Subscription failed")
                     except Exception:
-                        st.error("An error occurred. Please check your connection.")
+                        st.error("Connection error")
 
-    st.info("To unsubscribe, contact the administrator or use the API endpoint directly.")
+    st.info("To unsubscribe, use the 'Manage Subscribers' tab or contact the administrator.")
+
+# ==================== TAB 3: Manage Subscribers (Admin) ====================
+with tab_manage:
+    st.header("Manage Subscribers")
+    st.write("View and remove subscribers (admin only in production).")
+
+    try:
+        r = requests.get(f"{API_BASE}/subscribers/")
+        r.raise_for_status()
+        subscribers = r.json()
+    except Exception as e:
+        st.error("Failed to load subscribers")
+        subscribers = []
+
+    if not subscribers:
+        st.info("No subscribers yet.")
+    else:
+        df_subs = pd.DataFrame(subscribers)
+        df_subs["topics"] = df_subs["topics"].apply(lambda t: ", ".join(t) if t else "All topics")
+
+        st.dataframe(
+            df_subs[["email", "topics"]],
+            use_container_width=True,
+            hide_index=True
+        )
+
+        st.write("### Remove Subscriber")
+        email_to_remove = st.text_input("Enter email to unsubscribe")
+        if st.button("Remove Subscriber"):
+            if not email_to_remove:
+                st.error("Enter an email")
+            else:
+                with st.spinner("Removing..."):
+                    try:
+                        r = requests.delete(f"{API_BASE}/subscribers/{email_to_remove}")
+                        r.raise_for_status()
+                        st.success("Subscriber removed successfully")
+                        st.rerun()  # Refresh the page
+                    except requests.HTTPError as e:
+                        if e.response.status_code == 404:
+                            st.error("Subscriber not found")
+                        else:
+                            st.error("Removal failed")
+                    except Exception:
+                        st.error("Connection error")
