@@ -33,9 +33,9 @@ def store_items(items: List[NewsItem]) -> List[NewsItem]:
     for it in items:
         # ensure link is a plain string (mongodb validation)
         link = str(it.link) if it.link else None
-        id= str(uuid.uuid4())
-        doc = NewsItemDocument.objects(id=id).first()
+        doc = NewsItemDocument.objects(link=link).first()
         if not doc:
+            id = str(uuid.uuid4())
             doc = NewsItemDocument(
                 id=id,
                 title=it.title,
