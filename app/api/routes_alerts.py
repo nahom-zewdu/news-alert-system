@@ -54,26 +54,15 @@ async def api_alerts(
 @router.post("/{news_id}", tags=["alerts"])
 async def api_send_alert(
     news_id: str = Path(..., description="ID of the news item"),
-    payload: Optional[SendAlertRequest] = None,
     emailer: SMTPEmailer = Depends(get_emailer),
-) -> Any:
-    """
-    Send an alert for a given news_id.
-    The 'to' address can be provided in the body; otherwise the configured ALERT_EMAIL_TO is used.
-    """
-    to_addr = payload.to if payload and payload.to else settings.ALERT_EMAIL_TO
-
+):
     try:
-        # Delegate sync sending to threadpool
-        record = await run_in_threadpool(send_alert_for_news, emailer, news_id, to_addr)
-
-        if not record.get("sent"):
-            raise HTTPException(status_code=502, detail=f"Failed to send alert: {record.get('error')}")
-
-        return record
-
+        records = await run_in_threadpool(send_alert_for_news, emailer, news_id)
+        if not records:
+            raise HTTPException(status_code=404, detail="No subscribers for this category")
+        return {"sent_count": len([r for r in records if r["sent"]]), "records": records}
     except ValueError:
         raise HTTPException(status_code=404, detail="news item not found")
     except Exception:
-        logger.exception("Unhandled error while sending alert")
-        raise HTTPException(status_code=500, detail="internal error")
+        logger.exception("Unhandled error")
+        raise HTTPException(status_code=500)
