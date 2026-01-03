@@ -28,12 +28,12 @@ def subscribe(payload: SubscribeRequest):
 
 @router.delete("/{email}", status_code=200)
 def unsubscribe(email: str = Path(..., description="Email to unsubscribe")):
-    result = SubscriberDocument.objects(email=email, active=True).update(active=False)
+    result = SubscriberDocument.objects(email=email).delete()
     if result == 0:
         raise HTTPException(status_code=404, detail="Subscriber not found or already inactive")
     return {"message": "Unsubscribed successfully"}
 
 @router.get("/", response_model=List[dict])
 def list_subscribers():
-    subs = SubscriberDocument.objects(active=True)
-    return [{"email": s.email, "topics": s.topics} for s in subs]
+    subs = SubscriberDocument.objects().order_by("-created_at", "active")
+    return [{"email": s.email, "topics": s.topics, "active": s.active} for s in subs]
