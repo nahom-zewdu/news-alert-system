@@ -14,8 +14,8 @@ import pandas as pd
 from datetime import datetime, timedelta, timezone
 from streamlit_autorefresh import st_autorefresh
 
-# Configuration
-API_BASE = f"http://{os.getenv('APP_HOST', 'localhost')}:{os.getenv('APP_PORT', '8000')}/api/v1"
+# Use API_BASE from env if set, otherwise fallback
+API_BASE = os.getenv("API_BASE", f"http://localhost:8000/api/v1")
 
 st.set_page_config(page_title="News Alert Dashboard", layout="wide")
 st.title("News Alert Dashboard")
