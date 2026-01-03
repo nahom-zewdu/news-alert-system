@@ -2,16 +2,16 @@ name: Deploy to GCP Cloud Run
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Google Auth
+      - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
@@ -19,35 +19,45 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: Configure Docker
+      - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker ${{ vars.GCP_REGION }}-docker.pkg.dev
 
-      - name: Build and Push Image
+      - name: Build and push Docker image
         run: |
-          IMAGE=${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/news-alert-repo/app:$GITHUB_SHA
+          IMAGE=${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/news-alert-repo/app:${{ github.sha }}
           docker build -t $IMAGE .
           docker push $IMAGE
 
-      - name: Deploy Backend
+      - name: Deploy Backend (FastAPI)
         run: |
           gcloud run deploy news-alert-backend \
-            --image=$IMAGE \
-            --region=${{ vars.GCP_REGION }} \
-            --platform=managed \
+            --image $IMAGE \
+            --region ${{ vars.GCP_REGION }} \
+            --platform managed \
             --allow-unauthenticated \
-            --port=8000 \
-            --set-secrets=MONGO_URI=MONGO_URI:latest,GROQ_API_KEY=GROQ_API_KEY:latest,SMTP_PASS=SMTP_PASS:latest \
-            --set-env-vars=SMTP_HOST=smtp.gmail.com,SMTP_PORT=587,SMTP_USER=nahiyo86@gmail.com,ALERT_EMAIL_FROM=alerts@betech.com
+            --port 8000 \
+            --set-secrets MONGO_URI=MONGO_URI:latest \
+            --set-secrets GROQ_API_KEY=GROQ_API_KEY:latest \
+            --set-secrets SMTP_PASS=SMTP_PASS:latest \
+            --set-env-vars SMTP_HOST=smtp.gmail.com \
+            --set-env-vars SMTP_PORT=587 \
+            --set-env-vars SMTP_USER=nahiyo86@gmail.com \
+            --set-env-vars ALERT_EMAIL_FROM=alerts@betech.com
 
-      - name: Deploy Frontend
+      - name: Deploy Frontend (Streamlit Dashboard)
         run: |
-          BACKEND_URL=$(gcloud run services describe news-alert-backend --region=${{ vars.GCP_REGION }} --format='value(status.url)')
+          # Get the backend URL after deployment
+          BACKEND_URL=$(gcloud run services describe news-alert-backend \
+            --region ${{ vars.GCP_REGION }} \
+            --format 'value(status.url)')
+
           gcloud run deploy news-alert-dashboard \
-            --image=$IMAGE \
-            --region=${{ vars.GCP_REGION }} \
-            --platform=managed \
+            --image $IMAGE \
+            --region ${{ vars.GCP_REGION }} \
+            --platform managed \
             --allow-unauthenticated \
-            --port=8501 \
-            --command=streamlit \
-            --args=run,app/ui/streamlit.py,--server.port=8501,--server.address=0.0.0.0 \
-            --set-env-vars=APP_HOST=$BACKEND_URL,APP_PORT=80
+            --port 8501 \
+            --command streamlit \
+            --args run,app/ui/streamlit.py,--server.port=8501,--server.address=0.0.0.0 \
+            --set-env-vars APP_HOST=${BACKEND_URL} \
+            --set-env-vars APP_PORT=80
