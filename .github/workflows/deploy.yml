@@ -51,7 +51,7 @@ jobs:
         run: |
           IMAGE=${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/news-alert-repo/app:${{ github.sha }}
           BACKEND_URL=$(gcloud run services describe news-alert-backend \
-            --region=${{ vars.GCP_REGION }} \
+            --region ${{ vars.GCP_REGION }} \
             --format='value(status.url)')
           echo "Backend URL: $BACKEND_URL"
 
@@ -63,5 +63,4 @@ jobs:
             --port=8501 \
             --command=streamlit \
             --args=run,app/ui/streamlit.py,--server.port=8501,--server.address=0.0.0.0 \
-            --set-env-vars=APP_HOST=${BACKEND_URL} \
-            --set-env-vars=APP_PORT=80
+            --set-env-vars=API_BASE=${BACKEND_URL}/api/v1
