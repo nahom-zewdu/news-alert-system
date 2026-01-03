@@ -11,7 +11,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Authenticate to Google Cloud
+      - name: Google Auth
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
@@ -36,9 +36,7 @@ jobs:
             --platform=managed \
             --allow-unauthenticated \
             --port=8000 \
-            --set-secrets=MONGO_URI=MONGO_URI:latest \
-            --set-secrets=GROQ_API_KEY=GROQ_API_KEY:latest \
-            --set-secrets=SMTP_PASS=SMTP_PASS:latest \
+            --set-secrets=MONGO_URI=MONGO_URI:latest,GROQ_API_KEY=GROQ_API_KEY:latest,SMTP_PASS=SMTP_PASS:latest \
             --set-env-vars=SMTP_HOST=smtp.gmail.com,SMTP_PORT=587,SMTP_USER=nahiyo86@gmail.com,ALERT_EMAIL_FROM=alerts@betech.com
 
       - name: Deploy Frontend
