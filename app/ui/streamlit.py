@@ -164,7 +164,7 @@ with tab_feed:
                         else:
                             st.info(msg or "No subscribers for this category")
                     except Exception:
-                        st.error("Failed to send alert")
+                        st.error("No subscribers for this category")
 
             st.markdown("</div>", unsafe_allow_html=True)
 
