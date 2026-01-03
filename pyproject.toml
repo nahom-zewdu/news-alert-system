@@ -23,6 +23,7 @@ dependencies = [
   "mongoengine>=0.29.1",
   "streamlit-autorefresh>=1.0.1",
   "pymongo>=4.15.5",
+  "pydantic-settings>=2.12.0",
 ]
 
 [build-system]
