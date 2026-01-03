@@ -27,7 +27,7 @@ st_autorefresh(interval=30_000, key="feed_refresh")  # 30 seconds
 AVAILABLE_TOPICS = ["technology", "business", "science", "politics", "health"]
 
 # Tabs
-tab_feed, tab_subscribe, tab_manage = st.tabs(["News Feed", "Subscribe", "Manage Subscribers"])
+tab_feed, tab_subscribe, tab_manage, tab_help = st.tabs(["News Feed", "Subscribe", "Manage Subscribers", "Help"])
 
 # ==================== TAB 1: News Feed ====================
 with tab_feed:
@@ -271,3 +271,30 @@ with tab_manage:
                             st.error("Removal failed")
                     except Exception:
                         st.error("Connection error")
+
+# ==================== TAB 4: Help ====================
+with tab_help:
+    st.header("Help & Documentation")
+    st.markdown("""
+        ### Hey there welcome to the News Alert demo!
+
+        This little system pulls in fresh articles from Hacker News, NYT Technology, and The Verge, runs them through an AI model to figure out the category, and lets people subscribe to only the topics they care about.
+
+        #### Quick way to try it out:
+        1. Jump to the **Subscribe** tab → put in your email and pick a couple topics (like technology or politics).
+        2. Come back here to **News Feed**.
+        3. Hit **Fetch Latest News** (or just wait ~30 seconds it runs automatically).
+        4. Find an article that matches one of your topics and click **Send Alert**.
+        5. Check your inbox you should get a clean email alert.
+
+        That's the full loop!
+
+        #### A couple notes on why I built it this way:
+        - **Manual "Send Alert" button** instead of auto-sending everything: during testing I didn't want to spam your inbox every 30 seconds with every new article. Clicking the button lets you decide exactly when and what gets sent.
+        - **Limited topic list** (only technology, business, science, politics, health): keeps the AI classification accurate and avoids weird edge cases. It's plenty for a demo but focused enough to work reliably.
+        - **No login for subscribing**: makes it dead simple to try out just email + topics and you're in.
+
+        Feel free to play around, send a few test alerts, and see how the whole thing flows. It's still a demo, so things are kept intentionally lightweight.
+
+        Enjoy!
+        """)
