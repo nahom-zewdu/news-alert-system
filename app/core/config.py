@@ -34,8 +34,8 @@ class Settings(BaseSettings):
     GROQ_MODEL: str = Field("llama-3.1-8b-instant", env="GROQ_MODEL")
 
     # News filtering
+    TOPICS: Optional[str] = Field("technology,business,science,politics,health", env="TOPICS")
     KEYWORDS: Optional[str] = "[]"
-    TOPICS: Optional[str] = "[]"
 
     # Redis (future)
     REDIS_URL: Optional[str] = None
@@ -51,7 +51,10 @@ class Settings(BaseSettings):
     SCHEDULER_MODE: str = Field("background")
 
     # RSS feeds
-    RSS_FEEDS: Optional[str] = ""
+    RSS_FEEDS: Optional[str] = Field(
+        "https://news.ycombinator.com/rss,https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml,https://www.theverge.com/rss/index.xml", 
+        env="RSS_FEEDS"
+    )
 
     # Logging
     LOG_LEVEL: str = Field("INFO")
