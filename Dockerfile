@@ -1,40 +1,29 @@
-# syntax=docker/dockerfile:1
 
-# Builder stage
-FROM python:3.12-slim AS builder
+FROM python:3.12-slim
 
-# Install uv (latest official image)
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
+RUN apt-get update && \
+    apt-get install -y curl git && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install uv
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+
+ENV PATH="/root/.local/bin:${PATH}"
+
+RUN uv --version
 
 WORKDIR /app
-
-ENV UV_COMPILE_BYTECODE=1 \
-    UV_LINK_MODE=copy \
-    UV_PYTHON_DOWNLOADS=never \
-    UV_PROJECT_ENVIRONMENT=/app/.venv
 
 COPY pyproject.toml uv.lock ./
 
-# Install dependencies (without the project itself yet, for better caching)
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-install-project --no-dev
+RUN uv sync --frozen --no-dev --no-install-project
 
 COPY . /app
-
-# Install the project itself (editable mode not needed for production)
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-dev
-
-# Runtime stage (small final image)
-FROM python:3.12-slim
-
-WORKDIR /app
-
-COPY --from=builder /app /app
 
 ENV PATH="/app/.venv/bin:$PATH" \
     VIRTUAL_ENV="/app/.venv"
 
 EXPOSE 8000
 
+# Run FastAPI by default
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
