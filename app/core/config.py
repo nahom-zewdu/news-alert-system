@@ -27,7 +27,6 @@ class Settings(BaseSettings):
     SMTP_USER: str
     SMTP_PASS: str = Field(..., env="SMTP_PASS")
     ALERT_EMAIL_FROM: str
-    ALERT_EMAIL_TO: str
 
     # LLM / Groq
     GROQ_API_KEY: Optional[str] = ""
@@ -41,9 +40,6 @@ class Settings(BaseSettings):
     REDIS_URL: Optional[str] = None
 
     # MongoDB
-    MONGO_DB_ATLAS_USERNAME: str
-    MONGO_DB_ATLAS_PASSWORD: str
-    MONGO_DB_ATLAS_HOST: str
     MONGO_DB_NAME: str = "news_db"
     MONGO_URI: str = Field(..., env="MONGO_URI")
     
