@@ -247,7 +247,7 @@ with tab_manage:
         df_subs["topics"] = df_subs["topics"].apply(lambda t: ", ".join(t) if t else "All topics")
 
         st.dataframe(
-            df_subs[["email", "topics"]],
+            df_subs[["email", "topics", "active"]],
             use_container_width=True,
             hide_index=True
         )
