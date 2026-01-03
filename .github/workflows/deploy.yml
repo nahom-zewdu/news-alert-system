@@ -1,0 +1,55 @@
+name: Deploy to GCP Cloud Run
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker
+        run: gcloud auth configure-docker ${{ vars.GCP_REGION }}-docker.pkg.dev
+
+      - name: Build and Push Image
+        run: |
+          IMAGE=${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/news-alert-repo/app:$GITHUB_SHA
+          docker build -t $IMAGE .
+          docker push $IMAGE
+
+      - name: Deploy Backend
+        run: |
+          gcloud run deploy news-alert-backend \
+            --image=$IMAGE \
+            --region=${{ vars.GCP_REGION }} \
+            --platform=managed \
+            --allow-unauthenticated \
+            --port=8000 \
+            --set-secrets=MONGO_URI=MONGO_URI:latest \
+            --set-secrets=GROQ_API_KEY=GROQ_API_KEY:latest \
+            --set-secrets=SMTP_PASS=SMTP_PASS:latest \
+            --set-env-vars=SMTP_HOST=smtp.gmail.com,SMTP_PORT=587,SMTP_USER=nahiyo86@gmail.com,ALERT_EMAIL_FROM=alerts@betech.com
+
+      - name: Deploy Frontend
+        run: |
+          BACKEND_URL=$(gcloud run services describe news-alert-backend --region=${{ vars.GCP_REGION }} --format='value(status.url)')
+          gcloud run deploy news-alert-dashboard \
+            --image=$IMAGE \
+            --region=${{ vars.GCP_REGION }} \
+            --platform=managed \
+            --allow-unauthenticated \
+            --port=8501 \
+            --command=streamlit \
+            --args=run,app/ui/streamlit.py,--server.port=8501,--server.address=0.0.0.0 \
+            --set-env-vars=APP_HOST=$BACKEND_URL,APP_PORT=80
